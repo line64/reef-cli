@@ -1,7 +1,10 @@
 # reef-cli
 
-Usage:
+##Usage:
 
-npm run install-reef-client
+#
+npm run install-reef-client 
+#
 npm install
+#
 npm run start
