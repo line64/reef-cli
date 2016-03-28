@@ -11,10 +11,10 @@ export default class ReefConnectionClient {
             region: options.region,
             accessKeyId: options.accessKeyId,
             secretAccessKey: options.secretAccessKey,
-            serviceDomain: options.serviceDomain || "hotels-vault",
-            serviceLane: options.serviceLane || "shared",
-            clientDomain: options.clientDomain || "booking-puller",
-            clientLane: options.clientLane || "singleton"
+            serviceDomain: options.serviceDomain || "serviceDomain-missing-configuration",
+            serviceLane: options.serviceLane || "serviceLane-missing-configuration",
+            clientDomain: options.clientDomain || "clientDomain-missing-configuration",
+            clientLane: options.clientLane || "clientLane-missing-configuration"
         });
 
         this.client = new ReefClient(brokerFacade);
@@ -28,7 +28,7 @@ export default class ReefConnectionClient {
             .then(() => {
                 bunyanLog.info('starting up Reef Client');
                 this.client.start();
-                return resolve();
+                return resolve(this);
             })
             .catch(err => {
                 bunyanLog.error('error setting up Reef Client: ', err);
