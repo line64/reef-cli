@@ -38,6 +38,10 @@ export default class ReefConnectionClient {
         });
     }
 
+    stop() {
+        this.client.stop();
+    }
+
     execute(type, payload) {
 
         bunyanLog.info(type + " COMMAND SENT:", payload);

@@ -47,7 +47,7 @@ async function start() {
 dotenv.load();
 start()
 .then( (reefClient) => {
-    console.log("Insert reef command \n");
+    console.log("Insert reef command (command;payload): ");
     rl.on('line', function(line){
 
         if(line == "exit"){
