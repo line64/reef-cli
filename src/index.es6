@@ -5,6 +5,7 @@ import ReefClient from './utils/setUpReefClient';
 
 import readline from 'readline';
 
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -16,11 +17,12 @@ function parseLine(line){
         return undefined;
     }
 
-    let values = line.split(';', 2);
+    let values = line.split(';', 3);
 
     let parsedLine = {
-        command: values[0].toUpperCase().trim(),
-        payload: values[1].trim()
+        type: values[0].toUpperCase().trim(),
+        command: values[1].toUpperCase().trim(),
+        payload: values[2].trim()
         }
 
     return parsedLine;
@@ -47,7 +49,7 @@ async function start() {
 dotenv.load();
 start()
 .then( (reefClient) => {
-    console.log("Insert reef command (command;payload): ");
+    console.log("Insert reef command (type;command;payload): ");
     rl.on('line', function(line){
 
         if(line == "exit"){
@@ -63,10 +65,16 @@ start()
             return;
         }
 
+        console.log("Type inserted: " + parsedValues.type);
         console.log("Command inserted: " + parsedValues.command);
         console.log("Payload inserted: " + parsedValues.payload);
 
-        reefClient.execute(parsedValues.command, parsedValues.payload);
+        if( parsedValues.type === 'Q'){
+            reefClient.query(parsedValues.command, parsedValues.payload);
+        }
+        else if ( parsedValues.type === 'C' ){
+            reefClient.execute(parsedValues.command, parsedValues.payload);
+        }
     });
 })
 .catch( (err) => {

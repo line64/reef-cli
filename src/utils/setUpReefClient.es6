@@ -42,6 +42,31 @@ export default class ReefConnectionClient {
         this.client.stop();
     }
 
+
+    query(type, payload) {
+
+        bunyanLog.info(type + " COMMAND SENT:", payload);
+
+        return new Promise((resolve, reject) => {
+
+            this.client.query(type, payload).then(data => {
+
+                bunyanLog.info(type + " RESPONSE RECEIVED:", data);
+
+                resolve(data);
+
+            }).catch(err => {
+
+                bunyanLog.info(type + " RESPONSE ERROR:", err);
+
+                reject(err);
+
+            });
+
+        });
+
+    }
+
     execute(type, payload) {
 
         bunyanLog.info(type + " COMMAND SENT:", payload);
