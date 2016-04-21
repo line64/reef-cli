@@ -17,9 +17,8 @@ export default class ReefConnectionClient {
 
         this.client = new ReefClient(brokerFacade);
 
-        this.serviceDomain = process.env.serviceDomain || "serviceDomain-missing-configuration";
-        this.serviceLane = process.env.serviceLane || "serviceLane-missing-configuration";
-
+        this.serviceDomain = process.env.SERVICE_DOMAIN || "serviceDomain-missing-configuration";
+        this.serviceLane = process.env.SERVICE_LANE || "serviceLane-missing-configuration";
     }
 
     connect() {

@@ -2,9 +2,7 @@ import dotenv from 'dotenv';
 import _ from 'lodash';
 import bunyanLog from './utils/bunyanLog';
 import ReefClient from './utils/setUpReefClient';
-
 import readline from 'readline';
-
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -51,6 +49,7 @@ async function start() {
 }
 
 dotenv.load();
+
 start()
 .then( (reefClient) => {
     console.log("Insert reef command (type;command;payload): ");
