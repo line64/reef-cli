@@ -6,7 +6,7 @@
   "scripts": {
     "start": "babel-node ./src/index.es6",
     "prepublish": "npm run compile",
-    "install-reef-client": "npm install reef-client --registry http://npm.line64.com "
+    "install-reef-client": "npm install reef-client@latest --registry http://npm.line64.com "
   },
   "author": "Line64",
   "license": "MIT",

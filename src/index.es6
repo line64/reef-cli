@@ -14,7 +14,7 @@ const rl = readline.createInterface({
 function parseLine(line){
 
     if( line.search('[;]') === -1 ){
-        return undefined;
+        throw new Error("Bad parameters");
     }
 
     let values = line.split(';', 3);
@@ -22,7 +22,13 @@ function parseLine(line){
     let parsedLine = {
         type: values[0].toUpperCase().trim(),
         command: values[1].toUpperCase().trim(),
-        payload: values[2].trim()
+        payload: JSON.parse(values[2].trim())
+        }
+
+    if( parsedLine.type == null || parsedLine.type == undefined
+        || parsedLine.command == null || parsedLine.command == undefined
+        || parsedLine.payload == null || parsedLine.command == undefined){
+            throw new Error("Bad parameters");
         }
 
     return parsedLine;
@@ -37,8 +43,6 @@ async function start() {
         secretAccessKey: process.env.AWS_SECRETACCESSKEY,
         region: process.env.AWS_REGION,
         accessKeyId: process.env.AWS_ACCESSKEYID,
-        serviceDomain: process.env.SERVICE_DOMAIN,
-        serviceLane: process.env.SERVICE_LANE,
         clientDomain: process.env.CLIENT_DOMAIN,
         clientLane: process.env.CLIENT_LANE
     });
@@ -58,10 +62,13 @@ start()
             return;
         }
 
-        let parsedValues = parseLine(line);
+        let parsedValues = null;
 
-        if( parsedValues == undefined ){
-            console.log("Incorrect format");
+        try{
+            parsedValues = parseLine(line);
+        }
+        catch(err){
+            console.log(err);
             return;
         }
 
@@ -75,8 +82,11 @@ start()
         else if ( parsedValues.type === 'C' ){
             reefClient.execute(parsedValues.command, parsedValues.payload);
         }
+        else{
+            console.log("Bad parameter");
+        }
     });
 })
 .catch( (err) => {
-    bunyanLog.info(err);
+    console.log(err);
 });

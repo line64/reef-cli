@@ -11,13 +11,14 @@ export default class ReefConnectionClient {
             region: options.region,
             accessKeyId: options.accessKeyId,
             secretAccessKey: options.secretAccessKey,
-            serviceDomain: options.serviceDomain || "serviceDomain-missing-configuration",
-            serviceLane: options.serviceLane || "serviceLane-missing-configuration",
             clientDomain: options.clientDomain || "clientDomain-missing-configuration",
             clientLane: options.clientLane || "clientLane-missing-configuration"
         });
 
         this.client = new ReefClient(brokerFacade);
+
+        this.serviceDomain = process.env.serviceDomain || "serviceDomain-missing-configuration";
+        this.serviceLane = process.env.serviceLane || "serviceLane-missing-configuration";
 
     }
 
@@ -45,11 +46,11 @@ export default class ReefConnectionClient {
 
     query(type, payload) {
 
-        bunyanLog.info(type + " COMMAND SENT:", payload);
+        bunyanLog.info(type + " QUERY SENT:", payload);
 
         return new Promise((resolve, reject) => {
 
-            this.client.query(type, payload).then(data => {
+            this.client.query(this.serviceDomain, this.serviceLane, type, payload).then(data => {
 
                 bunyanLog.info(type + " RESPONSE RECEIVED:", data);
 
@@ -73,7 +74,7 @@ export default class ReefConnectionClient {
 
         return new Promise((resolve, reject) => {
 
-            this.client.execute(type, payload).then(data => {
+            this.client.execute(this.serviceDomain, this.serviceLane, type, payload).then(data => {
 
                 bunyanLog.info(type + " RESPONSE RECEIVED:", data);
 
