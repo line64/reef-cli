@@ -33,6 +33,6 @@
     "npm": ">=3.0.0"
   },
   "bin": {
-      "reef": "./lib/dist.js"
+      "reef": "./lib/index.js"
   }
 }
