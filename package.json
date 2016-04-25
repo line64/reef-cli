@@ -4,16 +4,19 @@
   "description": "A command line client for reef",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node ./src/index.es6",
+    "start": "npm run compile && node ./lib/index.js",
+    "start-native": "babel-run ./src/inde.es6",
     "prepublish": "npm run compile",
+    "compile": "babel -d ./lib ./src",
     "install-reef-client": "npm install reef-client@latest --registry http://npm.line64.com "
   },
   "author": "Line64",
   "license": "MIT",
   "dependencies": {
-  "babel-runtime": "^6.3.19",
-  "bunyan": "^1.7.0",
-  "dotenv": "^2.0.0"
+    "babel-runtime": "^6.3.19",
+    "bunyan": "^1.7.0",
+    "dotenv": "^2.0.0",
+    "nconf": "^0.8.4"
   },
   "devDependencies": {
     "babel": "^6.3.26",

@@ -1,61 +1,57 @@
-import dotenv from 'dotenv';
 import _ from 'lodash';
-import bunyanLog from './utils/bunyanLog';
-import ReefClient from './utils/setUpReefClient';
 import readline from 'readline';
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
+import dotenv from 'dotenv';
+import nconf from 'nconf';
 
-function parseLine(line){
+import bunyanLog from './utils/bunyanLog';
+import ReefClient from './utils/setUpReefClient';
+import parseLine from './utils/parseLine'
 
-    if( line.search('[;]') === -1 ){
-        throw new Error("Bad parameters");
-    }
+dotenv.load();
+nconf.argv()
+    .env()
+    .file({ file: './config.json' });
 
-    let values = line.split(';', 3);
 
-    let parsedLine = {
-        type: values[0].toUpperCase().trim(),
-        command: values[1].toUpperCase().trim(),
-        payload: JSON.parse(values[2].trim())
-        }
+const SERVICE_DOMAIN = 'serviceDomain',
+    SERVICE_LANE = 'serviceLane',
+    CLIENT_DOMAIN = 'clientDomain',
+    CLIENT_LANE = 'clientLane',
+    TYPE = 'type',
+    PAYLOAD = 'payload',
+    COMMAND = 'command';
 
-    if( parsedLine.type == null || parsedLine.type == undefined
-        || parsedLine.command == null || parsedLine.command == undefined
-        || parsedLine.payload == null || parsedLine.command == undefined){
-            throw new Error("Bad parameters");
-        }
-
-    return parsedLine;
-
-}
 
 async function start() {
 
-    let reefClient = null;
-
-    reefClient = new ReefClient({
+    let reefClient = new ReefClient({
         secretAccessKey: process.env.AWS_SECRETACCESSKEY,
         region: process.env.AWS_REGION,
         accessKeyId: process.env.AWS_ACCESSKEYID,
-        clientDomain: process.env.CLIENT_DOMAIN,
-        clientLane: process.env.CLIENT_LANE
+        clientDomain: nconf.get(CLIENT_DOMAIN),
+        clientLane: nconf.get(CLIENT_LANE),
+        serviceDomain: nconf.get(SERVICE_DOMAIN),
+        serviceLane: nconf.get(SERVICE_LANE)
     });
 
     return reefClient.connect();
 }
 
-dotenv.load();
+function interactiveStart(reefClient){
 
-start()
-.then( (reefClient) => {
+    let serviceDomain = nconf.get(SERVICE_DOMAIN),
+        serviceLane = nconf.get(SERVICE_LANE),
+        rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout
+        });
+
     console.log("Insert reef command (type;command;payload): ");
     rl.on('line', function(line){
 
         if(line == "exit"){
+            bunyanLog.info("Stopping reef client");
             rl.close();
             reefClient.stop();
             return;
@@ -85,6 +81,56 @@ start()
             console.log("Bad parameter");
         }
     });
+}
+
+function oneUseStart(reefClient){
+
+    let type = nconf.get(TYPE).toUpperCase(),
+        command = nconf.get(COMMAND).toUpperCase(),
+        payload = JSON.parse( nconf.get(PAYLOAD) ),
+        serviceDomain = nconf.get(SERVICE_DOMAIN),
+        serviceLane = nconf.get(SERVICE_LANE);
+
+    if( !serviceLane || !serviceDomain ){
+        bunyanLog.info("Stopping reef client");
+        reefClient.stop();
+        throw new Error("Bad service lane or service domain");
+    }
+
+    let promise = null;
+
+    if( type === 'Q'){
+        promise = reefClient.query(serviceDomain, serviceLane, command, payload);
+    }
+    else if ( type === 'C' ){
+        promise = reefClient.execute(serviceDomain, serviceLane, command, payload);
+    }
+    else{
+        bunyanLog.info("Stopping reef client");
+        reefClient.stop();
+        throw new Error("No type found");
+    }
+
+    return promise
+    .then( () =>{
+        bunyanLog.info("Stopping reef client");
+        return reefClient.stop();
+    })
+    .catch( (err) => {
+        bunyanLog.info("Stopping reef client");
+        return reefClient.stop();
+    });
+}
+
+start()
+.then( (reefClient) => {
+
+    if(false){
+        return interactiveStart(reefClient);
+    }
+    else{
+        return oneUseStart(reefClient);
+    }
 })
 .catch( (err) => {
     console.log(err);

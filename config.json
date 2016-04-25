@@ -1,0 +1,6 @@
+{
+    "serviceDomain": "legacy-actuator",
+    "serviceLane": "shared",
+    "clientDomain": "reef-cli",
+    "clientLane": "singleton"
+}
