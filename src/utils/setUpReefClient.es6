@@ -40,6 +40,7 @@ export default class ReefConnectionClient {
 
     stop() {
         this.client.stop();
+        process.exit();
     }
 
 

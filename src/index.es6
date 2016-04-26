@@ -119,7 +119,7 @@ function oneUseStart(reefClient){
         return reefClient.stop();
     })
     .catch( (err) => {
-        bunyanLog.info("Stopping reef client");
+        bunyanLog.info("Error:" + err + " Stopping reef client");
         return reefClient.stop();
     });
 }
