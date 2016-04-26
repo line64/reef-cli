@@ -1,5 +1,5 @@
 import bunyanLog from './bunyanLog';
-import { SqsBrokerFacade, ReefClient } from 'reef-client';
+import { SqsBrokerFacade, ReefClient } from '@line64/reef-client';
 
 export default class ReefConnectionClient {
 
