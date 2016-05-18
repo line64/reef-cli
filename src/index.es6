@@ -22,25 +22,28 @@ const SERVICE_DOMAIN = 'serviceDomain',
     CLIENT_LANE = 'clientLane',
     TYPE = 'type',
     PAYLOAD = 'payload',
-    COMMAND = 'command';
+    COMMAND = 'command',
+    INTERACTIVE = "i";
 
 
 async function start() {
 
-    let reefClient = new ReefClient({
+    let reefConfiguration = {
         secretAccessKey: process.env.AWS_SECRETACCESSKEY,
         region: process.env.AWS_REGION,
         accessKeyId: process.env.AWS_ACCESSKEYID,
         clientDomain: nconf.get(CLIENT_DOMAIN),
-        clientLane: nconf.get(CLIENT_LANE),
-        serviceDomain: nconf.get(SERVICE_DOMAIN),
-        serviceLane: nconf.get(SERVICE_LANE)
-    });
+        clientLane: nconf.get(CLIENT_LANE)
+    };
+
+    let reefClient = new ReefClient(reefConfiguration);
+
+    bunyanLog.info(`Set up parameters: ${reefConfiguration}`)
 
     return reefClient.connect();
 }
 
-function interactiveStart(reefClient){
+function interactive(reefClient){
 
     let serviceDomain = nconf.get(SERVICE_DOMAIN),
         serviceLane = nconf.get(SERVICE_LANE),
@@ -48,6 +51,10 @@ function interactiveStart(reefClient){
           input: process.stdin,
           output: process.stdout
         });
+
+    bunyanLog.info(`Using ${serviceDomain}-${serviceLane} - If it is not the
+        desired service domain and lane export 'serviceDomain' and 'serviceLane'
+        variables with the desired values and restart the program`);
 
     console.log("Insert reef command (type;command;payload): ");
     rl.on('line', function(line){
@@ -74,10 +81,20 @@ function interactiveStart(reefClient){
         console.log("Payload inserted: " + parsedValues.payload);
 
         if( parsedValues.type === 'Q'){
-            reefClient.query(parsedValues.command, parsedValues.payload);
+            try{
+                reefClient.query(parsedValues.command, parsedValues.payload);
+            }
+            catch(err){
+                bunyanLog.info(`There was an error: `, err);
+            }
         }
         else if ( parsedValues.type === 'C' ){
-            reefClient.execute(parsedValues.command, parsedValues.payload);
+            try{
+                reefClient.execute(parsedValues.command, parsedValues.payload);
+            }
+            catch(err){
+                bunyanLog.info(`There was an error: `, err);
+            }
         }
         else{
             console.log("Bad parameter");
@@ -85,7 +102,7 @@ function interactiveStart(reefClient){
     });
 }
 
-function oneUseStart(reefClient){
+function oneUse(reefClient){
 
     let type = nconf.get(TYPE).toUpperCase(),
         command = nconf.get(COMMAND).toUpperCase(),
@@ -127,11 +144,11 @@ function oneUseStart(reefClient){
 start()
 .then( (reefClient) => {
 
-    if(false){
-        return interactiveStart(reefClient);
+    if(nconf.get(INTERACTIVE)){
+        return interactive(reefClient);
     }
     else{
-        return oneUseStart(reefClient);
+        return oneUse(reefClient);
     }
 })
 .catch( (err) => {
