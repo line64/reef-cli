@@ -12,7 +12,7 @@
   "author": "Line64",
   "license": "MIT",
   "dependencies": {
-    "@line64/reef-client": "^1.0.0-beta.1",
+    "@line64/reef-client": "^1.0.0-beta.2",
     "babel-runtime": "^6.3.19",
     "bunyan": "^1.7.0",
     "dotenv": "^2.0.0",
