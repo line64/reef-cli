@@ -1,95 +1,28 @@
 import bunyanLog from './bunyanLog';
 import { SqsBrokerFacade, ReefClient } from '@line64/reef-client';
 
-export default class ReefConnectionClient {
+export default async function(options) {
 
-    constructor(options) {
+    let brokerFacade = new SqsBrokerFacade({
+        region: options.region,
+        accessKeyId: options.accessKeyId,
+        secretAccessKey: options.secretAccessKey,
+        clientDomain: options.clientDomain || "clientDomain-missing-configuration",
+        clientLane: options.clientLane || "clientLane-missing-configuration"
+    });
 
-        bunyanLog.info('setting up Reef Client');
+    let reefClient = new ReefClient(brokerFacade);
 
-        let brokerFacade = new SqsBrokerFacade({
-            region: options.region,
-            accessKeyId: options.accessKeyId,
-            secretAccessKey: options.secretAccessKey,
-            clientDomain: options.clientDomain || "clientDomain-missing-configuration",
-            clientLane: options.clientLane || "clientLane-missing-configuration"
-        });
+    bunyanLog.info(`Set up parameters: ${JSON.stringify(options)}`)
 
-        this.client = new ReefClient(brokerFacade);
+    reefClient.on('info', (info) => { bunyanLog.info(info); });
 
-        this.serviceDomain = options.serviceDomain || "serviceDomain-missing-configuration";
-        this.serviceLane = options.serviceLane || "serviceLane-missing-configuration";
-    }
+    reefClient.on('error', (error) => { bunyanLog.error(error); });
 
-    connect() {
-        return new Promise((resolve, reject) => {
+    await reefClient.setup();
 
-            this.client.setup()
-            .then(() => {
-                bunyanLog.info('starting up Reef Client');
-                this.client.start();
-                return resolve(this);
-            })
-            .catch(err => {
-                bunyanLog.error('error setting up Reef Client: ', err);
-                return reject();
-            });
+    await reefClient.start();
 
-        });
-    }
-
-    stop() {
-        this.client.stop();
-        process.exit();
-    }
-
-
-    query(serviceDomain, serviceLane, type, payload) {
-
-        bunyanLog.info(type + " QUERY SENT:", payload);
-
-        return new Promise((resolve, reject) => {
-
-            this.client.query(serviceDomain, serviceLane, type, payload).then(data => {
-
-                bunyanLog.info(type + " RESPONSE RECEIVED:", data);
-
-                resolve(data);
-
-            }).catch(err => {
-
-                bunyanLog.info(type + " RESPONSE ERROR:", err);
-
-                reject(err);
-
-            });
-
-        });
-
-    }
-
-    execute(serviceDomain, serviceLane, type, payload) {
-
-        bunyanLog.info(type + " COMMAND SENT:", payload);
-
-        return new Promise((resolve, reject) => {
-
-            this.client.execute(serviceDomain, serviceLane, type, payload).then(data => {
-
-                bunyanLog.info(type + " RESPONSE RECEIVED:", data);
-
-                resolve(data);
-
-            }).catch(err => {
-
-                bunyanLog.info(type + " RESPONSE ERROR:", err);
-
-                reject(err);
-
-            });
-
-        });
-
-    }
+    return reefClient;
 
 }

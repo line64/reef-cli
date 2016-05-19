@@ -36,11 +36,9 @@ async function start() {
         clientLane: nconf.get(CLIENT_LANE)
     };
 
-    let reefClient = new ReefClient(reefConfiguration);
+    let reefClient = await new ReefClient(reefConfiguration);
 
-    bunyanLog.info(`Set up parameters: ${reefConfiguration}`)
-
-    return reefClient.connect();
+    return reefClient;
 }
 
 function interactive(reefClient){
@@ -81,20 +79,22 @@ function interactive(reefClient){
         console.log("Payload inserted: " + parsedValues.payload);
 
         if( parsedValues.type === 'Q'){
-            try{
-                reefClient.query(parsedValues.command, parsedValues.payload);
-            }
-            catch(err){
+            reefClient.query(parsedValues.command, parsedValues.payload)
+            .then( (response) => {
+                bunyanLog.info("Response: ", response);
+            })
+            .catch( (err) => {
                 bunyanLog.info(`There was an error: `, err);
-            }
+            });
         }
         else if ( parsedValues.type === 'C' ){
-            try{
-                reefClient.execute(parsedValues.command, parsedValues.payload);
-            }
-            catch(err){
+            reefClient.execute(parsedValues.command, parsedValues.payload)
+            .then( (response) => {
+                bunyanLog.info("Response: ", response);
+            })
+            .catch( (err) => {
                 bunyanLog.info(`There was an error: `, err);
-            }
+            });
         }
         else{
             console.log("Bad parameter");
@@ -131,13 +131,16 @@ function oneUse(reefClient){
     }
 
     return promise
-    .then( () =>{
+    .then( (response) =>{
+        bunyanLog.info("Response: ", response);
         bunyanLog.info("Stopping reef client");
-        return reefClient.stop();
+        reefClient.stop();
+        process.exit();
     })
     .catch( (err) => {
-        bunyanLog.info("Error:" + err + " Stopping reef client");
-        return reefClient.stop();
+        bunyanLog.error(err);
+        reefClient.stop();
+        process.exit();
     });
 }
 
