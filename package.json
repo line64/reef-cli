@@ -1,6 +1,6 @@
 {
   "name": "@line64/reef-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A command line client for reef",
   "main": "index.js",
   "scripts": {

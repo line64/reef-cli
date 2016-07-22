@@ -7,8 +7,8 @@ export default async function(options) {
         region: options.region,
         accessKeyId: options.accessKeyId,
         secretAccessKey: options.secretAccessKey,
-        clientDomain: options.clientDomain || "clientDomain-missing-configuration",
-        clientLane: options.clientLane || "clientLane-missing-configuration"
+        clientDomain: "reef-cli",
+        clientLane: "singleton"
     });
 
     let reefClient = new ReefClient(brokerFacade);
